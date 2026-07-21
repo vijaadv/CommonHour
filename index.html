@@ -118,7 +118,7 @@
   window.__chLoadTimer = setTimeout(function(){
     var app = document.getElementById('app');
     if(app && app.textContent.trim() === 'Loading…'){
-      app.innerHTML = '<div class="panel"><h2>Stuck loading</h2><p style="color:var(--ink-dim);font-size:14px;">The app script never started — likely the esm.sh import for Supabase got blocked (an ad blocker/extension, or a Content-Security-Policy on your host). Try an incognito window, or check the browser console (F12) for the real error.</p></div>';
+      app.innerHTML = '<div class="panel"><h2>Stuck loading</h2><p style="color:var(--ink-dim);font-size:14px;">The app script never started — likely a CDN script got blocked (an ad blocker/extension, a Content-Security-Policy on your host, or a network issue), or you\'re viewing a cached older version of this page. Try a hard refresh (Ctrl/Cmd+Shift+R) or an incognito window, and check the browser console (F12) for the real error.</p></div>';
     }
   }, 6000);
 </script>
