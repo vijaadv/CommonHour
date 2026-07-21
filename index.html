@@ -339,7 +339,7 @@ async function selectGroup(groupId){
   render();
 }
 async function loadMembers(){
-  const { data, error } = await sb
+  const { data, error } = await supabase
     .from('memberships')
     .select('user_id, users(id, email, display_name, color)')
     .eq('group_id', currentGroup.id);
@@ -347,7 +347,7 @@ async function loadMembers(){
   members = (data||[]).map(r=>r.users).filter(Boolean);
 }
 async function loadSchedules(){
-  const { data, error } = await sb
+  const { data, error } = await supabase
     .from('schedules')
     .select('*')
     .eq('group_id', currentGroup.id);
