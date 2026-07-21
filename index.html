@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CommonHour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0A0A;
+    --bg-raised: #171717;
+    --bg-raised-2: #212121;
+    --ink: #FFFFFF;
+    --ink-dim: #D6D2C4;
+    --muted: #9C9890;
+    --accent: #CFB991;
+    --accent-dim: #8A7757;
+    --danger: #C1502E;
+    --line: rgba(255,255,255,0.14);
+    --line-strong: rgba(255,255,255,0.28);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--ink); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1040px;margin:0 auto;padding:32px 24px 80px;}
+  h1,h2,h3{font-family:'Fraunces', serif; font-weight:600; margin:0;}
+  .eyebrow{font-family:'IBM Plex Mono', monospace; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  header{margin-bottom:36px; border-bottom:1px solid var(--line); padding-bottom:24px;}
+  header h1{font-size:36px; letter-spacing:-0.01em;}
+  header p{color:var(--ink-dim); margin-top:8px; font-size:15px; max-width:560px; line-height:1.5;}
+  .panel{background:var(--bg-raised); border:1px solid var(--line); border-radius:10px; padding:22px 24px; margin-bottom:24px;}
+  .panel h2{font-size:19px; margin-bottom:14px; display:flex; align-items:center; gap:10px;}
+  .panel h2 .num{font-family:'IBM Plex Mono', monospace; font-size:12px; color:var(--bg); background:var(--accent); width:20px;height:20px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;}
+  label{font-size:12px; color:var(--muted); display:block; margin-bottom:5px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.06em;}
+  input[type=text], select{background:var(--bg-raised-2); border:1px solid var(--line-strong); color:var(--ink); border-radius:6px; padding:9px 10px; font-size:14px; font-family:'IBM Plex Sans',sans-serif; width:100%;}
+  input:focus, select:focus{outline:2px solid var(--accent); outline-offset:1px;}
+  .row{display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;}
+  .row > div{flex:1; min-width:110px;}
+  button{font-family:'IBM Plex Sans',sans-serif; font-weight:500; font-size:14px; background:var(--accent); color:#000; border:none; border-radius:6px; padding:10px 18px; cursor:pointer;}
+  button:hover{background:#f0c463;}
+  button.ghost{background:transparent; border:1px solid var(--line-strong); color:var(--ink);}
+  button.ghost:hover{background:var(--bg-raised-2);}
+  button.danger{background:var(--danger); color:#fff;}
+  button.danger:hover{background:#d96a45;}
+  button.small{padding:6px 10px; font-size:12px;}
+  button:disabled{opacity:0.45; cursor:not-allowed;}
+  .daypicker{display:flex; gap:6px; flex-wrap:wrap;}
+  .daychip{font-family:'IBM Plex Mono',monospace; font-size:12px; padding:8px 12px; border-radius:6px; border:1px solid var(--line-strong); background:var(--bg-raised-2); color:var(--ink-dim); cursor:pointer;}
+  .daychip:hover{border-color:var(--accent);}
+  .daychip.selected{background:rgba(207,185,145,0.18); border-color:var(--accent); color:var(--accent);}
+  .people-list{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;}
+  .chip{display:flex; align-items:center; gap:8px; padding:6px 10px 6px 6px; border-radius:20px; border:1px solid var(--line-strong); font-size:13px; background:var(--bg-raised-2);}
+  .chip.me{border-color:var(--accent);}
+  .colordot{-webkit-appearance:none; appearance:none; width:16px; height:16px; padding:0; border:1px solid var(--line-strong); border-radius:50%; cursor:pointer; background:none; flex-shrink:0;}
+  .colordot::-webkit-color-swatch-wrapper{padding:0; border-radius:50%;}
+  .colordot::-webkit-color-swatch{border:none; border-radius:50%;}
+  .colordot::-moz-color-swatch{border:none; border-radius:50%;}
+  .staticdot{width:16px;height:16px;border-radius:50%;flex-shrink:0;}
+  .blocklist{display:flex; flex-direction:column; gap:6px; margin-top:14px;}
+  .blockrow{display:flex; justify-content:space-between; align-items:center; background:var(--bg-raised-2); border-radius:6px; padding:8px 12px; font-size:13px;}
+  .blockrow .meta{color:var(--ink-dim);}
+  .blockrow .label{font-weight:500;}
+  .empty{color:var(--muted); font-size:13px; padding:10px 0;}
+  .seemore{margin-top:10px;}
+  .grid-wrap{overflow-x:auto;}
+  .grid{display:grid; grid-template-columns:52px repeat(7, 1fr); min-width:700px; border-top:1px solid var(--line); border-left:1px solid var(--line);}
+  .grid .head{font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-dim); padding:8px 4px; text-align:center; border-right:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--bg-raised);}
+  .timecol{display:flex; flex-direction:column;}
+  .timecell{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--muted); text-align:right; padding-right:6px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); height:24px; display:flex; align-items:flex-start; justify-content:flex-end; transform:translateY(-6px);}
+  .daycol{position:relative; border-right:1px solid var(--line);}
+  .hourline{border-bottom:1px solid var(--line); height:24px;}
+  .mealband{position:absolute; left:0; right:0; background:rgba(207,185,145,0.06); pointer-events:none;}
+  .lane{position:absolute; border-radius:4px; font-size:10px; color:#fff; padding:2px 4px; overflow:hidden; line-height:1.2; border:1px solid rgba(0,0,0,0.25); user-select:none;}
+  .lane.mine{cursor:grab; touch-action:none;}
+  .lane.dragging{cursor:grabbing; z-index:20; box-shadow:0 0 0 2px var(--accent);}
+  #hoverTip{position:fixed; display:none; background:var(--bg-raised-2); border:1px solid var(--line-strong); color:var(--ink); font-size:12px; font-family:'IBM Plex Sans',sans-serif; padding:6px 10px; border-radius:6px; pointer-events:none; white-space:nowrap; z-index:100;}
+  .found-layer{position:absolute; inset:0; pointer-events:none;}
+  .found{position:absolute; left:2px; right:2px; background:rgba(207,185,145,0.35); border:1px solid var(--accent); border-radius:4px; font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--accent); display:flex; align-items:center; justify-content:center; text-align:center; padding:2px;}
+  .legend{display:flex; flex-wrap:wrap; gap:10px 16px; margin-top:14px; font-size:12px; color:var(--ink-dim);}
+  .legend .item{display:flex; align-items:center; gap:6px;}
+  .legend .dot{width:10px; height:10px; border-radius:50%;}
+  .findbar{display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; margin-bottom:16px;}
+  .peoplecheck{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px;}
+  .pc{display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:6px; border:1px solid var(--line-strong); font-size:13px; background:var(--bg-raised-2);}
+  .results{display:flex; flex-direction:column; gap:10px; margin-top:18px;}
+  .result-day{background:var(--bg-raised-2); border-radius:8px; padding:12px 16px;}
+  .result-day h3{font-size:13px; font-family:'IBM Plex Mono',monospace; text-transform:uppercase; letter-spacing:0.06em; color:var(--accent); margin-bottom:8px;}
+  .slot{display:inline-flex; align-items:center; gap:6px; background:rgba(207,185,145,0.14); border:1px solid var(--accent-dim); border-radius:20px; padding:5px 12px; font-size:13px; margin:0 8px 8px 0;}
+  .noresult{color:var(--muted); font-size:13px; font-style:italic;}
+  ::placeholder{color:var(--muted);}
+  .loading{color:var(--muted); font-size:13px; padding:20px 0; text-align:center;}
+  select option{background:var(--bg-raised-2);}
+  .authbox{text-align:center; padding:40px 20px;}
+  .authbox p{color:var(--ink-dim); max-width:420px; margin:10px auto 24px;}
+  .groupbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;}
+  .invitecode{font-family:'IBM Plex Mono',monospace; background:var(--bg-raised-2); border:1px solid var(--line-strong); border-radius:6px; padding:4px 10px; font-size:13px; color:var(--accent);}
+  .topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .topbar .who{font-size:13px; color:var(--ink-dim);}
+  #modalOverlay{position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; z-index:200;}
+  #modalBox{background:var(--bg-raised); border:1px solid var(--line-strong); border-radius:10px; padding:24px; max-width:360px; width:90%;}
+  #modalBox p{font-size:14px; color:var(--ink-dim); margin:0 0 18px;}
+  #modalBox .actions{display:flex; gap:10px; justify-content:flex-end;}
+  #toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--bg-raised-2); border:1px solid var(--line-strong); color:var(--ink); padding:10px 18px; border-radius:8px; font-size:13px; display:none; z-index:200;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Meetup coordinator</div>
+    <h1>CommonHour</h1>
+    <p>Everyone drops in their schedule. CommonHour finds the windows where you're all actually free — for lunch, dinner, study sessions, or just hanging out.</p>
+  </header>
+  <div id="app"><div class="loading">Loading…</div></div>
+</div>
+
+<div id="modalOverlay"><div id="modalBox"></div></div>
+<div id="toast"></div>
+
+<script type="module">
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+// =========================================================
+// FILL THESE IN from Supabase Dashboard → Project Settings → API
+// =========================================================
+const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const GRID_START = 7*60;
+const GRID_END = 23*60;
+const PX_PER_MIN = 48/60;
+
+let session = null;
+let myProfile = null;
+let myGroups = [];        // [{id, name, invite_code, ...}]
+let currentGroup = null;
+let members = [];         // [{id, email, display_name, color}]
+let schedules = [];       // flat rows from the schedules table
+let realtimeChannel = null;
+
+let selectedAddDays = new Set();
+let editingBlockId = null;
+let selectedForFind = new Set();
+let blockListExpanded = false;
+
+// ---------------- small utilities ----------------
+function toMin(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+function toLabel(mins){
+  let h = Math.floor(mins/60), m = mins%60;
+  const ap = h>=12 ? 'pm':'am';
+  let h12 = h%12; if(h12===0) h12=12;
+  return m===0 ? h12+ap : h12+':'+String(m).padStart(2,'0')+ap;
+}
+function fmtRange(s,e){ return toLabel(s)+' – '+toLabel(e); }
+function fmtDur(mins){
+  const h = Math.floor(mins/60), m = mins%60;
+  if(h===0) return m+'m';
+  if(m===0) return h+'h';
+  return h+'h '+m+'m';
+}
+function parseTypedTime(raw){
+  if(!raw) return null;
+  const str = raw.trim().toLowerCase().replace(/\s+/g,'').replace('.',':');
+  const m = str.match(/^(\d{1,2})(?::(\d{2}))?(am|pm)?$/);
+  if(!m) return null;
+  let h = parseInt(m[1],10);
+  const min = m[2] ? parseInt(m[2],10) : 0;
+  const ap = m[3];
+  if(min < 0 || min > 59) return null;
+  if(ap){
+    if(h < 1 || h > 12) return null;
+    if(ap==='am'){ if(h===12) h = 0; } else { if(h!==12) h += 12; }
+  } else if(h < 0 || h > 23) return null;
+  return String(h).padStart(2,'0')+':'+String(min).padStart(2,'0');
+}
+function hslToHex(h, s, l){
+  s/=100; l/=100;
+  const c = (1 - Math.abs(2*l-1)) * s;
+  const x = c * (1 - Math.abs((h/60)%2 - 1));
+  const m = l - c/2;
+  let r=0,g=0,b=0;
+  if(h<60){r=c;g=x;b=0;} else if(h<120){r=x;g=c;b=0;} else if(h<180){r=0;g=c;b=x;}
+  else if(h<240){r=0;g=x;b=c;} else if(h<300){r=x;g=0;b=c;} else {r=c;g=0;b=x;}
+  const toHex = v => Math.round((v+m)*255).toString(16).padStart(2,'0');
+  return '#'+toHex(r)+toHex(g)+toHex(b);
+}
+function defaultColorFor(userId){
+  const idx = members.findIndex(m=>m.id===userId);
+  const i = idx === -1 ? 0 : idx;
+  const hue = (i * 137.508) % 360;
+  return hslToHex(hue, 68, 58);
+}
+function colorFor(userId){
+  const m = members.find(x=>x.id===userId);
+  return (m && m.color) || defaultColorFor(userId);
+}
+function contrastText(hex){
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  const lum = (0.299*r + 0.587*g + 0.114*b) / 255;
+  return lum > 0.6 ? '#1a1a1a' : '#ffffff';
+}
+function displayNameFor(userId){
+  const m = members.find(x=>x.id===userId);
+  return m ? (m.display_name || m.email || 'Someone') : 'Someone';
+}
+
+// ---------------- custom modal / toast (native confirm/alert are unreliable in sandboxed embeds) ----------------
+function showConfirm(message, onYes){
+  const overlay = document.getElementById('modalOverlay');
+  const box = document.getElementById('modalBox');
+  box.innerHTML = `<p>${message}</p><div class="actions"><button class="ghost" id="modalNo">Cancel</button><button class="danger" id="modalYes">Confirm</button></div>`;
+  overlay.style.display = 'flex';
+  document.getElementById('modalNo').onclick = ()=> overlay.style.display='none';
+  document.getElementById('modalYes').onclick = ()=>{ overlay.style.display='none'; onYes(); };
+}
+let toastTimer = null;
+function showToast(message){
+  const t = document.getElementById('toast');
+  t.textContent = message;
+  t.style.display = 'block';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.style.display='none'; }, 3200);
+}
+
+// ---------------- auth ----------------
+async function signInWithGoogle(){
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+}
+async function signOut(){
+  await supabase.auth.signOut();
+  session = null; myProfile = null; myGroups = []; currentGroup = null;
+  render();
+}
+async function ensureProfile(){
+  const { data, error } = await supabase.from('users').select('*').eq('id', session.user.id).maybeSingle();
+  if(data){ myProfile = data; return; }
+  // fallback if the auto-create trigger hasn't landed yet
+  const { data: created } = await supabase.from('users').insert({
+    id: session.user.id, email: session.user.email,
+    display_name: session.user.user_metadata?.full_name || session.user.email
+  }).select().single();
+  myProfile = created;
+}
+
+// ---------------- groups ----------------
+async function loadMyGroups(){
+  const { data, error } = await supabase
+    .from('memberships')
+    .select('group_id, groups(id, name, invite_code, created_by)')
+    .eq('user_id', session.user.id);
+  if(error){ showToast('Could not load your groups.'); return; }
+  myGroups = (data||[]).map(r => r.groups).filter(Boolean);
+}
+async function createGroup(name){
+  const { data: group, error } = await supabase.from('groups')
+    .insert({ name, created_by: session.user.id }).select().single();
+  if(error){ showToast('Could not create group.'); return; }
+  await supabase.from('memberships').insert({ group_id: group.id, user_id: session.user.id, role:'owner' });
+  await loadMyGroups();
+  await selectGroup(group.id);
+}
+async function joinGroupByCode(code){
+  const { data, error } = await supabase.rpc('join_group_by_code', { p_code: code.trim().toLowerCase() });
+  if(error){ showToast('Invalid invite code.'); return; }
+  await loadMyGroups();
+  await selectGroup(data);
+}
+async function leaveGroup(){
+  showConfirm(`Leave "${currentGroup.name}"? You'll need the invite code to rejoin.`, async ()=>{
+    await supabase.from('memberships').delete().eq('group_id', currentGroup.id).eq('user_id', session.user.id);
+    if(realtimeChannel) supabase.removeChannel(realtimeChannel);
+    currentGroup = null;
+    await loadMyGroups();
+    render();
+  });
+}
+async function selectGroup(groupId){
+  currentGroup = myGroups.find(g=>g.id===groupId) || currentGroup;
+  if(!currentGroup) return;
+  await loadMembers();
+  await loadSchedules();
+  selectedForFind = new Set(members.map(m=>m.id));
+  subscribeRealtime();
+  render();
+}
+async function loadMembers(){
+  const { data, error } = await supabase
+    .from('memberships')
+    .select('user_id, users(id, email, display_name, color)')
+    .eq('group_id', currentGroup.id);
+  if(error){ showToast('Could not load group members.'); return; }
+  members = (data||[]).map(r=>r.users).filter(Boolean);
+}
+async function loadSchedules(){
+  const { data, error } = await supabase
+    .from('schedules')
+    .select('*')
+    .eq('group_id', currentGroup.id);
+  if(error){ showToast('Could not load schedules.'); return; }
+  schedules = data || [];
+}
+function subscribeRealtime(){
+  if(realtimeChannel) supabase.removeChannel(realtimeChannel);
+  realtimeChannel = supabase.channel('group-'+currentGroup.id)
+    .on('postgres_changes', { event:'*', schema:'public', table:'schedules', filter:`group_id=eq.${currentGroup.id}` },
+      async ()=>{ await loadSchedules(); renderGrid(); renderBlockList(); })
+    .on('postgres_changes', { event:'*', schema:'public', table:'memberships', filter:`group_id=eq.${currentGroup.id}` },
+      async ()=>{ await loadMembers(); render(); })
+    .on('postgres_changes', { event:'UPDATE', schema:'public', table:'users' },
+      async ()=>{ await loadMembers(); renderGrid(); renderMemberList(); renderPeopleCheck(); })
+    .subscribe();
+}
+
+// ---------------- schedule blocks (mine only — RLS enforces this too) ----------------
+async function addOrEditBlock(){
+  const startRaw = document.getElementById('blockStart').value;
+  const endRaw = document.getElementById('blockEnd').value;
+  const label = document.getElementById('blockLabel').value.trim();
+  if(selectedAddDays.size === 0){ showToast('Pick at least one day it repeats on.'); return; }
+  const start = parseTypedTime(startRaw);
+  const end = parseTypedTime(endRaw);
+  if(!start || !end){ showToast('Type times like "9:00am" or "14:30".'); return; }
+  if(toMin(end) <= toMin(start)){ showToast('End time needs to be after start time.'); return; }
+
+  if(editingBlockId){
+    await supabase.from('schedules').delete().eq('id', editingBlockId).eq('user_id', session.user.id);
+  }
+  const rows = [...selectedAddDays].map(day => ({
+    group_id: currentGroup.id, user_id: session.user.id, day, start_time: start, end_time: end, label
+  }));
+  const { error } = await supabase.from('schedules').insert(rows);
+  if(error){ showToast('Could not save class.'); return; }
+
+  document.getElementById('blockLabel').value = '';
+  selectedAddDays = new Set();
+  editingBlockId = null;
+  document.getElementById('addBlockBtn').textContent = 'Add class';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+  document.querySelectorAll('.daychip').forEach(c=>c.classList.remove('selected'));
+  await loadSchedules();
+  renderBlockList();
+  renderGrid();
+}
+async function removeBlock(id){
+  showConfirm('Remove this class?', async ()=>{
+    await supabase.from('schedules').delete().eq('id', id).eq('user_id', session.user.id);
+    await loadSchedules();
+    renderBlockList();
+    renderGrid();
+  });
+}
+function startEditBlock(id){
+  const b = schedules.find(x=>x.id===id);
+  if(!b) return;
+  editingBlockId = id;
+  selectedAddDays = new Set([b.day]);
+  document.querySelectorAll('.daychip').forEach(c=>{
+    c.classList.toggle('selected', Number(c.dataset.day)===b.day);
+  });
+  document.getElementById('blockStart').value = toLabel(toMin(b.start_time));
+  document.getElementById('blockEnd').value = toLabel(toMin(b.end_time));
+  document.getElementById('blockLabel').value = b.label || '';
+  document.getElementById('addBlockBtn').textContent = 'Save changes';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+}
+function cancelEdit(){
+  editingBlockId = null;
+  selectedAddDays = new Set();
+  document.querySelectorAll('.daychip').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('blockStart').value = '9:00am';
+  document.getElementById('blockEnd').value = '10:30am';
+  document.getElementById('blockLabel').value = '';
+  document.getElementById('addBlockBtn').textContent = 'Add class';
+  document.getElementById('cancelEditBtn').style.display = 'none';
+}
+async function updateMyColor(hex){
+  await supabase.from('users').update({ color: hex }).eq('id', session.user.id);
+  const me = members.find(m=>m.id===session.user.id);
+  if(me) me.color = hex;
+  renderGrid(); renderMemberList(); renderPeopleCheck();
+}
+
+// ---------------- render ----------------
+function render(){
+  const app = document.getElementById('app');
+  if(!session){
+    app.innerHTML = `
+      <div class="panel authbox">
+        <h2>Sign in to get started</h2>
+        <p>Sign in with Google to create or join a group and start comparing schedules.</p>
+        <button id="googleBtn">Continue with Google</button>
+      </div>`;
+    document.getElementById('googleBtn').addEventListener('click', signInWithGoogle);
+    return;
+  }
+  if(!currentGroup){
+    app.innerHTML = `
+      <div class="topbar">
+        <div class="who">Signed in as ${myProfile?.display_name || session.user.email}</div>
+        <button class="ghost small" id="signOutBtn">Sign out</button>
+      </div>
+      <div class="panel">
+        <h2><span class="num">1</span>Your groups</h2>
+        <div id="groupList" class="people-list"></div>
+        ${myGroups.length===0 ? '<div class="empty">You\'re not in any groups yet.</div>' : ''}
+      </div>
+      <div class="panel">
+        <h2><span class="num">2</span>Create a group</h2>
+        <div class="row">
+          <div><label>Group name</label><input type="text" id="newGroupName" placeholder="Roommates" /></div>
+          <button id="createGroupBtn">Create</button>
+        </div>
+      </div>
+      <div class="panel">
+        <h2><span class="num">3</span>Join with an invite code</h2>
+        <div class="row">
+          <div><label>Invite code</label><input type="text" id="joinCode" placeholder="a1b2c3" /></div>
+          <button id="joinGroupBtn">Join</button>
+        </div>
+      </div>`;
+    document.getElementById('signOutBtn').addEventListener('click', signOut);
+    document.getElementById('createGroupBtn').addEventListener('click', ()=>{
+      const name = document.getElementById('newGroupName').value.trim();
+      if(name) createGroup(name);
+    });
+    document.getElementById('joinGroupBtn').addEventListener('click', ()=>{
+      const code = document.getElementById('joinCode').value.trim();
+      if(code) joinGroupByCode(code);
+    });
+    const gl = document.getElementById('groupList');
+    gl.innerHTML = myGroups.map(g=>`<div class="chip" data-group="${g.id}" style="cursor:pointer;">${g.name}</div>`).join('');
+    gl.querySelectorAll('.chip').forEach(c=> c.addEventListener('click', ()=> selectGroup(c.dataset.group)));
+    return;
+  }
+
+  app.innerHTML = `
+    <div class="topbar">
+      <div class="who">Signed in as ${myProfile?.display_name || session.user.email}</div>
+      <button class="ghost small" id="signOutBtn">Sign out</button>
+    </div>
+    <div class="panel">
+      <div class="groupbar">
+        <div>
+          <h2 style="margin-bottom:6px;">${currentGroup.name}</h2>
+          <span class="invitecode" id="inviteCodeText" title="Click to copy">Invite code: ${currentGroup.invite_code}</span>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <select id="groupSwitcher">${myGroups.map(g=>`<option value="${g.id}" ${g.id===currentGroup.id?'selected':''}>${g.name}</option>`).join('')}</select>
+          <button class="ghost small" id="leaveGroupBtn">Leave group</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="num">1</span>Group members</h2>
+      <div class="people-list" id="memberList"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="num">2</span>Add your classes</h2>
+      <div style="margin-bottom:12px;">
+        <label>Repeats on</label>
+        <div class="daypicker" id="dayPicker">
+          ${DAYS.map((d,i)=>`<button type="button" class="daychip" data-day="${i}">${d}</button>`).join('')}
+        </div>
+      </div>
+      <div class="row">
+        <div><label>Starts</label><input type="text" id="blockStart" value="9:00am" placeholder="9:00am" /></div>
+        <div><label>Ends</label><input type="text" id="blockEnd" value="10:30am" placeholder="10:30am" /></div>
+        <div style="flex:2;"><label>Label (optional)</label><input type="text" id="blockLabel" placeholder="Calc II" /></div>
+        <button id="addBlockBtn">Add class</button>
+        <button id="cancelEditBtn" class="ghost" style="display:none;">Cancel edit</button>
+      </div>
+      <div class="blocklist" id="blockList"></div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="num">3</span>Weekly overlay</h2>
+      <div class="grid-wrap"><div id="gridHost"></div><div id="hoverTip"></div></div>
+      <div class="legend" id="legend"></div>
+      <div style="font-size:12px; color:var(--muted); margin-top:10px;">Drag your own classes up or down to reschedule in 10-minute steps.</div>
+    </div>
+
+    <div class="panel">
+      <h2><span class="num">4</span>Find shared free time</h2>
+      <div class="peoplecheck" id="peopleCheck"></div>
+      <div class="findbar">
+        <div>
+          <label>What for</label>
+          <select id="mealType">
+            <option value="lunch">Lunch (11:00am – 2:00pm)</option>
+            <option value="study">Study session (any free time after 9:00am)</option>
+            <option value="dinner">Dinner (5:00pm – 9:00pm)</option>
+            <option value="hangout">Hangout (any free time after 9:00am)</option>
+            <option value="custom">Custom range</option>
+          </select>
+        </div>
+        <div id="customRange" style="display:none;">
+          <div><label>From</label><input type="text" id="customStart" value="12:00pm" placeholder="12:00pm"/></div>
+          <div><label>To</label><input type="text" id="customEnd" value="7:00pm" placeholder="7:00pm"/></div>
+        </div>
+        <div>
+          <label>Min length</label>
+          <select id="minDur">
+            <option value="30">30 min</option>
+            <option value="45">45 min</option>
+            <option value="60" selected>1 hour</option>
+            <option value="90">1.5 hours</option>
+          </select>
+        </div>
+        <button id="findBtn">Find times</button>
+      </div>
+      <div class="results" id="results"></div>
+    </div>
+  `;
+
+  document.getElementById('signOutBtn').addEventListener('click', signOut);
+  document.getElementById('leaveGroupBtn').addEventListener('click', leaveGroup);
+  document.getElementById('groupSwitcher').addEventListener('change', e=> selectGroup(e.target.value));
+  document.getElementById('inviteCodeText').addEventListener('click', ()=>{
+    navigator.clipboard?.writeText(currentGroup.invite_code);
+    showToast('Invite code copied.');
+  });
+  document.getElementById('addBlockBtn').addEventListener('click', addOrEditBlock);
+  document.getElementById('cancelEditBtn').addEventListener('click', cancelEdit);
+  document.getElementById('findBtn').addEventListener('click', findTimes);
+  document.getElementById('mealType').addEventListener('change', e=>{
+    document.getElementById('customRange').style.display = e.target.value==='custom' ? 'contents' : 'none';
+  });
+  document.querySelectorAll('.daychip').forEach(chip=>{
+    if(selectedAddDays.has(Number(chip.dataset.day))) chip.classList.add('selected');
+    chip.addEventListener('click', ()=>{
+      const d = Number(chip.dataset.day);
+      if(selectedAddDays.has(d)) selectedAddDays.delete(d); else selectedAddDays.add(d);
+      chip.classList.toggle('selected');
+    });
+  });
+
+  renderMemberList();
+  renderPeopleCheck();
+  renderBlockList();
+  renderGrid();
+}
+
+function renderMemberList(){
+  const el = document.getElementById('memberList');
+  if(members.length===0){ el.innerHTML = `<div class="empty">No members yet.</div>`; return; }
+  el.innerHTML = members.map(m=>{
+    const mine = m.id === session.user.id;
+    const dot = mine
+      ? `<input type="color" class="colordot" id="myColorInput" value="${colorFor(m.id)}" title="Change your color" />`
+      : `<span class="staticdot" style="background:${colorFor(m.id)};"></span>`;
+    return `<div class="chip ${mine?'me':''}">${dot}${m.display_name || m.email}${mine ? ' (you)' : ''}</div>`;
+  }).join('');
+  const myInput = document.getElementById('myColorInput');
+  if(myInput) myInput.addEventListener('change', e=> updateMyColor(e.target.value));
+}
+
+function renderBlockList(){
+  const el = document.getElementById('blockList');
+  const mine = schedules.filter(b=>b.user_id===session.user.id)
+    .sort((a,b)=> a.day-b.day || toMin(a.start_time)-toMin(b.start_time));
+  if(mine.length===0){ el.innerHTML = `<div class="empty">No classes added yet.</div>`; return; }
+  const LIMIT = 5;
+  const showAll = blockListExpanded || mine.length <= LIMIT;
+  const visible = showAll ? mine : mine.slice(0, LIMIT);
+  el.innerHTML = visible.map(b=>`
+    <div class="blockrow">
+      <div>
+        <span class="label">${DAYS[b.day]}</span>
+        <span class="meta"> · ${fmtRange(toMin(b.start_time), toMin(b.end_time))}${b.label ? ' · '+b.label : ''}</span>
+      </div>
+      <div style="display:flex; gap:6px;">
+        <button class="ghost small" data-editid="${b.id}">Edit</button>
+        <button class="ghost small" data-removeid="${b.id}">Remove</button>
+      </div>
+    </div>
+  `).join('');
+  if(mine.length > LIMIT){
+    el.insertAdjacentHTML('beforeend', `<button class="ghost small seemore" id="seeMoreBtn">${showAll ? 'Show less' : 'See '+(mine.length-LIMIT)+' more'}</button>`);
+    document.getElementById('seeMoreBtn').addEventListener('click', ()=>{ blockListExpanded = !blockListExpanded; renderBlockList(); });
+  }
+  el.querySelectorAll('[data-editid]').forEach(btn=> btn.addEventListener('click', ()=> startEditBlock(btn.dataset.editid)));
+  el.querySelectorAll('[data-removeid]').forEach(btn=> btn.addEventListener('click', ()=> removeBlock(btn.dataset.removeid)));
+}
+
+function renderPeopleCheck(){
+  const el = document.getElementById('peopleCheck');
+  if(members.length===0){ el.innerHTML = `<div class="empty">No members yet.</div>`; return; }
+  el.innerHTML = members.map(m=>`
+    <label class="pc">
+      <input type="checkbox" data-check="${m.id}" ${selectedForFind.has(m.id)?'checked':''} style="width:auto;" />
+      <span class="staticdot" style="width:8px;height:8px;background:${colorFor(m.id)};display:inline-block;"></span>
+      ${m.display_name || m.email}
+    </label>
+  `).join('');
+  el.querySelectorAll('[data-check]').forEach(cb=>{
+    cb.addEventListener('change', ()=>{
+      if(cb.checked) selectedForFind.add(cb.dataset.check); else selectedForFind.delete(cb.dataset.check);
+    });
+  });
+}
+
+function renderGrid(){
+  const host = document.getElementById('gridHost');
+  const totalMin = GRID_END - GRID_START;
+  const hourRows = totalMin/60;
+
+  let html = `<div class="grid"><div class="head"></div>`;
+  DAYS.forEach(d=> html += `<div class="head">${d}</div>`);
+  html += `<div class="timecol">`;
+  for(let h=0; h<hourRows; h++) html += `<div class="timecell" style="height:48px;">${toLabel(GRID_START+h*60)}</div>`;
+  html += `</div>`;
+
+  for(let d=0; d<7; d++){
+    html += `<div class="daycol" style="height:${hourRows*48}px;">`;
+    for(let h=0; h<hourRows; h++) html += `<div class="hourline" style="height:48px;"></div>`;
+    const bands = [[9*60, GRID_END]];
+    bands.forEach(([s,e])=>{
+      const top = (s-GRID_START)*PX_PER_MIN;
+      const height = (e-s)*PX_PER_MIN;
+      html += `<div class="mealband" style="top:${top}px; height:${height}px;"></div>`;
+    });
+    const laneCount = Math.max(members.length, 1);
+    members.forEach((m, idx)=>{
+      const blocks = schedules.filter(b=>b.day===d && b.user_id===m.id);
+      blocks.forEach(b=>{
+        const s = Math.max(toMin(b.start_time), GRID_START);
+        const e = Math.min(toMin(b.end_time), GRID_END);
+        if(e<=s) return;
+        const topPx = (s-GRID_START)*PX_PER_MIN;
+        const heightPx = (e-s)*PX_PER_MIN;
+        const laneWidth = 100/laneCount;
+        const left = idx*laneWidth;
+        const mine = m.id === session.user.id;
+        const tip = `${displayNameFor(m.id)} · ${DAYS[d]} ${fmtRange(s,e)}${b.label ? ' · '+b.label : ''}`;
+        const bg = colorFor(m.id);
+        html += `<div class="lane ${mine?'mine':''}" data-blockid="${b.id}" data-day="${d}" data-mine="${mine}" data-tip="${tip}" style="top:${topPx}px; height:${heightPx}px; left:${left}%; width:${laneWidth-1}%; background:${bg}; color:${contrastText(bg)};">${b.label||displayNameFor(m.id)}</div>`;
+      });
+    });
+    html += `<div class="found-layer" data-day="${d}"></div></div>`;
+  }
+  html += `</div>`;
+  host.innerHTML = html;
+  attachLaneInteractions();
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = members.map(m=>`<div class="item"><span class="dot" style="background:${colorFor(m.id)}"></span>${displayNameFor(m.id)}</div>`).join('')
+    + `<div class="item"><span class="dot" style="background:rgba(207,185,145,0.4); border:1px solid var(--accent);"></span>Common hours (9am+)</div>`;
+}
+
+function attachLaneInteractions(){
+  const tip = document.getElementById('hoverTip');
+  const dayColHeight = (GRID_END - GRID_START) * PX_PER_MIN;
+  document.querySelectorAll('.lane').forEach(lane=>{
+    let dragging = false, pointerId = null, startClientY = 0, startTopPx = 0;
+
+    lane.addEventListener('mouseenter', ()=>{ if(!dragging){ tip.textContent = lane.dataset.tip; tip.style.display='block'; } });
+    lane.addEventListener('mousemove', (e)=>{ if(!dragging){ tip.style.left=(e.clientX+14)+'px'; tip.style.top=(e.clientY+14)+'px'; } });
+    lane.addEventListener('mouseleave', ()=>{ tip.style.display='none'; });
+
+    if(lane.dataset.mine !== 'true') return; // only your own classes are draggable
+
+    lane.addEventListener('pointerdown', (e)=>{
+      dragging = true; pointerId = e.pointerId; startClientY = e.clientY;
+      startTopPx = parseFloat(lane.style.top);
+      lane.setPointerCapture(pointerId);
+      lane.classList.add('dragging');
+      tip.style.display = 'none';
+      e.preventDefault();
+    });
+    lane.addEventListener('pointermove', (e)=>{
+      if(!dragging) return;
+      const deltaY = e.clientY - startClientY;
+      const stepPx = PX_PER_MIN * 10;
+      let newTop = Math.round((startTopPx + deltaY) / stepPx) * stepPx;
+      const heightPx = lane.offsetHeight;
+      newTop = Math.max(0, Math.min(newTop, dayColHeight - heightPx));
+      lane.style.top = newTop + 'px';
+    });
+    lane.addEventListener('pointerup', async ()=>{
+      if(!dragging) return;
+      dragging = false;
+      lane.classList.remove('dragging');
+      const blockId = lane.dataset.blockid;
+      const finalTopPx = parseFloat(lane.style.top);
+      const newStartMin = GRID_START + Math.round(finalTopPx / PX_PER_MIN);
+      const block = schedules.find(b=>b.id===blockId);
+      if(block){
+        const duration = toMin(block.end_time) - toMin(block.start_time);
+        let newStart = newStartMin, newEnd = newStart + duration;
+        if(newEnd > GRID_END){ newEnd = GRID_END; newStart = newEnd - duration; }
+        if(newStart < GRID_START){ newStart = GRID_START; newEnd = newStart + duration; }
+        const startStr = String(Math.floor(newStart/60)).padStart(2,'0')+':'+String(newStart%60).padStart(2,'0');
+        const endStr = String(Math.floor(newEnd/60)).padStart(2,'0')+':'+String(newEnd%60).padStart(2,'0');
+        await supabase.from('schedules').update({ start_time:startStr, end_time:endStr }).eq('id', blockId).eq('user_id', session.user.id);
+        await loadSchedules();
+        renderBlockList();
+      }
+      renderGrid();
+    });
+    lane.addEventListener('pointercancel', ()=>{ dragging=false; lane.classList.remove('dragging'); });
+  });
+}
+
+function mergeBusy(intervals){
+  if(intervals.length===0) return [];
+  const sorted = [...intervals].sort((a,b)=>a[0]-b[0]);
+  const merged = [sorted[0].slice()];
+  for(let i=1;i<sorted.length;i++){
+    const last = merged[merged.length-1];
+    if(sorted[i][0] <= last[1]) last[1] = Math.max(last[1], sorted[i][1]);
+    else merged.push(sorted[i].slice());
+  }
+  return merged;
+}
+function freeWithin(busy, windowStart, windowEnd){
+  const free = [];
+  let cursor = windowStart;
+  const relevant = busy.filter(b=> b[1] > windowStart && b[0] < windowEnd);
+  for(const b of relevant){
+    const s = Math.max(b[0], windowStart), e = Math.min(b[1], windowEnd);
+    if(s > cursor) free.push([cursor, s]);
+    cursor = Math.max(cursor, e);
+  }
+  if(cursor < windowEnd) free.push([cursor, windowEnd]);
+  return free;
+}
+function clearFoundLayers(){ document.querySelectorAll('.found-layer').forEach(l=>l.innerHTML=''); }
+function paintFoundLayers(perDayResults){
+  clearFoundLayers();
+  document.querySelectorAll('.found-layer').forEach(layer=>{
+    const d = Number(layer.dataset.day);
+    const slots = perDayResults[d];
+    if(!slots) return;
+    layer.innerHTML = slots.map(([s,e])=>{
+      const top = (s-GRID_START)*PX_PER_MIN;
+      const height = (e-s)*PX_PER_MIN;
+      return `<div class="found" style="top:${top}px; height:${height}px;">${fmtRange(s,e)}</div>`;
+    }).join('');
+  });
+}
+async function findTimes(){
+  const chosen = [...selectedForFind].filter(id => members.some(m=>m.id===id));
+  const resultsEl = document.getElementById('results');
+  if(chosen.length < 2){ resultsEl.innerHTML = `<div class="noresult">Pick at least two people to compare.</div>`; clearFoundLayers(); return; }
+
+  const mealType = document.getElementById('mealType').value;
+  let windowStart, windowEnd;
+  if(mealType==='lunch'){ windowStart=11*60; windowEnd=14*60; }
+  else if(mealType==='study'){ windowStart=9*60; windowEnd=GRID_END; }
+  else if(mealType==='dinner'){ windowStart=17*60; windowEnd=21*60; }
+  else if(mealType==='hangout'){ windowStart=9*60; windowEnd=GRID_END; }
+  else {
+    const cs = parseTypedTime(document.getElementById('customStart').value);
+    const ce = parseTypedTime(document.getElementById('customEnd').value);
+    if(!cs || !ce || toMin(ce) <= toMin(cs)){
+      resultsEl.innerHTML = `<div class="noresult">Type a valid range, like "12:00pm" to "7:00pm".</div>`;
+      clearFoundLayers(); return;
+    }
+    windowStart = toMin(cs); windowEnd = toMin(ce);
+  }
+  const minDur = Number(document.getElementById('minDur').value);
+
+  const perDayResults = {};
+  for(let d=0; d<7; d++){
+    let free = [[windowStart, windowEnd]];
+    for(const uid of chosen){
+      const busyRaw = schedules.filter(b=>b.day===d && b.user_id===uid).map(b=>[toMin(b.start_time), toMin(b.end_time)]);
+      const busy = mergeBusy(busyRaw);
+      let nextFree = [];
+      for(const [fs,fe] of free) nextFree = nextFree.concat(freeWithin(busy, fs, fe));
+      free = nextFree;
+    }
+    const filtered = free.filter(([s,e]) => (e-s) >= minDur);
+    if(filtered.length) perDayResults[d] = filtered;
+  }
+
+  const dayKeys = Object.keys(perDayResults);
+  if(dayKeys.length===0){
+    resultsEl.innerHTML = `<div class="noresult">No shared window that long. Try a shorter minimum or a different time block.</div>`;
+  } else {
+    resultsEl.innerHTML = dayKeys.map(d=>`
+      <div class="result-day"><h3>${DAYS[d]}</h3>
+        ${perDayResults[d].map(([s,e])=>`<span class="slot">${fmtRange(s,e)} <span style="color:var(--muted);">· ${fmtDur(e-s)}</span></span>`).join('')}
+      </div>`).join('');
+  }
+  paintFoundLayers(perDayResults);
+}
+
+// ---------------- init ----------------
+async function init(){
+  const { data: { session: s } } = await supabase.auth.getSession();
+  session = s;
+  supabase.auth.onAuthStateChange(async (_event, newSession)=>{
+    session = newSession;
+    if(session){ await ensureProfile(); await loadMyGroups(); }
+    render();
+  });
+  if(session){ await ensureProfile(); await loadMyGroups(); }
+  render();
+}
+init();
+</script>
+</body>
+</html>
